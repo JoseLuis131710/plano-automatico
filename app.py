@@ -82,51 +82,48 @@ if archivo is not None:
     # OCR DE MEDIDAS
     # ======================
 
-    st.subheader("Medidas Detectadas")
-
-    try:
-
-        reader = cargar_ocr()
-
-       resultados = reader.readtext(
-    gris,
-    detail=1,
-    paragraph=False
-)
-
-        if len(resultados) == 0:
-            st.warning("No se detectó texto.")
-
-        for r in resultados:
-
-            texto = r[1]
-            confianza = r[2]
-
-            if confianza > 0.30:
-
-                st.write(
-                    f"Texto: {texto} | Confianza: {round(confianza,2)}"
-                )
-
-    except Exception as e:
-
-        st.error(f"Error OCR: {str(e)}")
-
-import re
+   # ======================
+# OCR DE MEDIDAS
+# ======================
 
 st.subheader("Medidas Detectadas")
 
-for r in resultados:
+try:
 
-    texto = r[1]
-    confianza = r[2]
+    reader = cargar_ocr()
 
-    numeros = re.findall(r'\d+', texto)
+    resultados = reader.readtext(
+        gris,
+        detail=1,
+        paragraph=False
+    )
 
-    for numero in numeros:
+    if len(resultados) == 0:
+        st.warning("No se detectó texto.")
 
-        if len(numero) >= 2:
+    import re
+
+    for r in resultados:
+
+        texto = r[1]
+        confianza = r[2]
+
+        if confianza > 0.30:
 
             st.write(
-                f"Medida: {numero} mm"
+                f"Texto: {texto} | Confianza: {round(confianza,2)}"
             )
+
+            numeros = re.findall(r'\d+', texto)
+
+            for numero in numeros:
+
+                if len(numero) >= 2:
+
+                    st.success(
+                        f"Medida detectada: {numero} mm"
+                    )
+
+except Exception as e:
+
+    st.error(f"Error OCR: {str(e)}")
