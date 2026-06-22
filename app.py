@@ -88,7 +88,11 @@ if archivo is not None:
 
         reader = cargar_ocr()
 
-        resultados = reader.readtext(img)
+       resultados = reader.readtext(
+    gris,
+    detail=1,
+    paragraph=False
+)
 
         if len(resultados) == 0:
             st.warning("No se detectó texto.")
@@ -108,3 +112,21 @@ if archivo is not None:
 
         st.error(f"Error OCR: {str(e)}")
 
+import re
+
+st.subheader("Medidas Detectadas")
+
+for r in resultados:
+
+    texto = r[1]
+    confianza = r[2]
+
+    numeros = re.findall(r'\d+', texto)
+
+    for numero in numeros:
+
+        if len(numero) >= 2:
+
+            st.write(
+                f"Medida: {numero} mm"
+            )
