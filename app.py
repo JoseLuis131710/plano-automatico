@@ -4,10 +4,7 @@ from PIL import Image
 import numpy as np
 import cv2
 
-st.set_page_config(
-    page_title="Croquis a Plano",
-    layout="wide"
-)
+st.set_page_config(page_title="Croquis a Plano")
 
 st.title("Croquis a Plano Automático")
 
@@ -26,32 +23,16 @@ if archivo is not None:
 
     img = np.array(imagen)
 
-    if len(img.shape) == 2:
-        img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
-
     st.subheader("Imagen Original")
-    st.image(img, use_container_width=True)
+    st.image(img)
 
-    # ==========================
-    # Escala de grises
-    # ==========================
-
+    # Convertir a escala de grises
     gris = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
 
-    # ==========================
     # Suavizado
-    # ==========================
+    blur = cv2.GaussianBlur(gris, (5, 5), 0)
 
-    blur = cv2.GaussianBlur(
-        gris,
-        (5, 5),
-        0
-    )
-
-    # ==========================
-    # Limpieza del croquis
-    # ==========================
-
+    # Umbral adaptativo
     thresh = cv2.adaptiveThreshold(
         blur,
         255,
@@ -62,15 +43,9 @@ if archivo is not None:
     )
 
     st.subheader("Croquis Limpio")
-    st.image(
-        thresh,
-        use_container_width=True
-    )
+    st.image(thresh)
 
-    # ==========================
     # Detectar líneas
-    # ==========================
-
     lineas = cv2.HoughLinesP(
         thresh,
         1,
@@ -80,10 +55,7 @@ if archivo is not None:
         maxLineGap=20
     )
 
-    # ==========================
-    # Plano limpio
-    # ==========================
-
+    # Crear plano blanco
     plano = np.ones(
         (img.shape[0], img.shape[1], 3),
         dtype=np.uint8
@@ -104,14 +76,11 @@ if archivo is not None:
             )
 
     st.subheader("Plano Generado")
-    st.image(
-        plano,
-        use_container_width=True
-    )
+    st.image(plano)
 
-    # ==========================
-    # OCR MEDIDAS
-    # ==========================
+    # ======================
+    # OCR DE MEDIDAS
+    # ======================
 
     st.subheader("Medidas Detectadas")
 
@@ -121,7 +90,8 @@ if archivo is not None:
 
         resultados = reader.readtext(img)
 
-        encontrados = False
+        if len(resultados) == 0:
+            st.warning("No se detectó texto.")
 
         for r in resultados:
 
@@ -130,20 +100,11 @@ if archivo is not None:
 
             if confianza > 0.30:
 
-                encontrados = True
-
                 st.write(
                     f"Texto: {texto} | Confianza: {round(confianza,2)}"
                 )
 
-        if not encontrados:
-            st.warning(
-                "No se detectaron medidas o textos."
-            )
-
     except Exception as e:
 
-        st.error(
-            f"Error OCR: {str(e)}"
-        )
+        st.error(f"Error OCR: {str(e)}")
 
