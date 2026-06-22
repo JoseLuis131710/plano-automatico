@@ -1,4 +1,5 @@
 import streamlit as st
+import easyocr
 from PIL import Image
 import numpy as np
 import cv2
@@ -66,3 +67,19 @@ if archivo is not None:
 
     st.subheader("Plano Generado")
     st.image(plano)
+st.subheader("Medidas Detectadas")
+
+reader = easyocr.Reader(['en'])
+
+resultados = reader.readtext(img)
+
+for r in resultados:
+
+    texto = r[1]
+    confianza = r[2]
+
+    if confianza > 0.3:
+        st.write(
+            f"Texto: {texto} | Confianza: {round(confianza,2)}"
+        )
+
